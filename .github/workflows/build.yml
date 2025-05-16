@@ -26,8 +26,8 @@ jobs:
       run: |
         buildozer android debug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@b8b4c6ff4d6cf83a09ae31d4b5edbc0673b347a7
+    - name: Upload APK (Alternativa)
+      uses: actions-ecosystem/action-upload-artifact@v1
       with:
         name: OpenAirApp.apk
         path: bin/*.apk
