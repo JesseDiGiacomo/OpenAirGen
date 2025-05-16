@@ -15,27 +15,27 @@ jobs:
     - name: Checkout código
       uses: actions/checkout@v2
 
-    - name: Set up Python
+    - name: Setup Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.10'
 
-    - name: Instalar dependências do sistema
+    - name: Instalar dependências do sistema e Android
       run: |
         sudo apt update
-        sudo apt install -y python3-pip build-essential zip unzip openjdk-11-jdk git
+        sudo apt install -y python3-pip zip unzip openjdk-11-jdk adb zipalign
         pip install buildozer cython
 
-    - name: Gerar APK com Buildozer
+    - name: Inicializar e compilar APK com Buildozer
       run: |
         buildozer android debug
 
-    - name: Renomear e mover APK para raiz do projeto
+    - name: Renomear e mover APK para release
       run: |
         mkdir -p release
         cp bin/*.apk release/OpenAirApp.apk
 
-    - name: Criar release e anexar APK
+    - name: Criar release no GitHub
       uses: softprops/action-gh-release@v1
       with:
         name: OpenAirApp
