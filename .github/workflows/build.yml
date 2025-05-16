@@ -26,18 +26,9 @@ jobs:
         sudo apt install -y python3-pip zip unzip openjdk-11-jdk adb zipalign
         pip install buildozer cython
 
-    - name: Inicializar buildozer (forçar setup)
+    - name: Compilar APK com Buildozer (verbose)
       run: |
-        buildozer android debug || true
-
-    - name: Aceitar licenças e instalar SDKs
-      run: |
-        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-31"
-
-    - name: Compilar APK com Buildozer
-      run: |
-        buildozer android debug
+        buildozer android debug --verbose
 
     - name: Renomear e mover APK para release
       run: |
