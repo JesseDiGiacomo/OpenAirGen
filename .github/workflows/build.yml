@@ -8,8 +8,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
-    - name: Checkout repository
+    - name: Checkout código
       uses: actions/checkout@v2
 
     - name: Set up Python
@@ -17,18 +20,26 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
+    - name: Instalar dependências do sistema
       run: |
         sudo apt update
         sudo apt install -y python3-pip build-essential zip unzip openjdk-11-jdk git
         pip install buildozer cython
 
-    - name: Initialize Buildozer
+    - name: Gerar APK com Buildozer
       run: |
         buildozer android debug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
+    - name: Renomear e mover APK para raiz do projeto
+      run: |
+        mkdir -p release
+        cp bin/*.apk release/OpenAirApp.apk
+
+    - name: Criar release e anexar APK
+      uses: softprops/action-gh-release@v1
       with:
-        name: OpenAirApp.apk
-        path: bin/*.apk
+        name: OpenAirApp
+        tag_name: v1.0.${{ github.run_number }}
+        files: release/OpenAirApp.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
