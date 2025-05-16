@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -22,12 +23,12 @@ jobs:
         sudo apt install -y python3-pip build-essential zip unzip openjdk-11-jdk git
         pip install buildozer cython
 
-    - name: Build APK
+    - name: Initialize Buildozer
       run: |
         buildozer android debug
 
-    - name: Upload APK (Alternativa)
-      uses: actions-ecosystem/action-upload-artifact@v1
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
       with:
         name: OpenAirApp.apk
         path: bin/*.apk
