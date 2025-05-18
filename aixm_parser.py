@@ -1,7 +1,5 @@
 import os
 import xml.etree.ElementTree as ET
-from datetime import datetime
-from openair_writer import gerar_openair_a_partir_de_zonas
 
 def extrair_zonas_aixm(xml_path):
     tree = ET.parse(xml_path)
@@ -43,7 +41,7 @@ def extrair_zonas_aixm(xml_path):
 def processar_xmls(diretorio='aixm_xml'):
     if not os.path.exists(diretorio):
         print("[ERRO] Diretório 'aixm_xml' não encontrado.")
-        return
+        return []  # Retorna uma lista vazia em caso de erro
     zonas = []
     arquivos = [f for f in os.listdir(diretorio) if f.endswith('.xml')]
     for arq in arquivos:
@@ -54,4 +52,4 @@ def processar_xmls(diretorio='aixm_xml'):
         except Exception as e:
             print(f"[ERRO] Falha ao processar {arq}: {e}")
     print(f"[OK] {len(zonas)} zonas extraídas.")
-    gerar_openair_a_partir_de_zonas(zonas, datetime.utcnow().date())
+    return zonas

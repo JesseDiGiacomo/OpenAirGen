@@ -1,6 +1,5 @@
 from kivy.lang import Builder
 from kivymd.app import MDApp
-from kivymd.theming import ThemeManager
 from kivy.uix.screenmanager import Screen
 from kivy.clock import Clock
 from datetime import datetime
@@ -9,6 +8,7 @@ import shutil
 import subprocess
 from kivy.utils import platform
 import traceback
+import threading  # Importe o módulo threading
 
 if platform != "android":
     from tkinter import filedialog
@@ -82,27 +82,35 @@ class OpenAirApp(MDApp):
             self.log_erro(e)
 
     def _executar_script(self, dt):
+        threading.Thread(target=self._processar_e_salvar).start()
+
+    def _processar_e_salvar(self):
         try:
-            self.root.ids.status_label.text = "[2/3] Processando dados..."
+            Clock.schedule_once(lambda dt: self.atualizar_status("[2/3] Processando dados..."), 0)
             resultado = subprocess.run(["python", "run_all.py"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             log = resultado.stdout + "\n" + resultado.stderr
-            self.root.ids.log_area.text = log
+            Clock.schedule_once(lambda dt: self.atualizar_log(log), 0)
 
             hoje = datetime.utcnow()
-            nome = f"espaco_aereo_{hoje.strftime('%Y-%m-%d')}.txt"
-            origem = os.path.join("data", f"{hoje.year}", f"{str(hoje.month).zfill(2)}", nome)
+            nome_arquivo = f"espaco_aereo_{hoje.strftime('%Y-%m-%d')}.txt"
 
-            if self.destino_custom and os.path.exists(origem):
-                destino = os.path.join(self.destino_custom, nome)
-                os.makedirs(os.path.dirname(destino), exist_ok=True)
-                shutil.copyfile(origem, destino)
-                self.root.ids.log_area.text += f"\n[OK] Arquivo salvo em: {destino}\n"
+            if self.destino_custom:
+                caminho_completo = os.path.join(self.destino_custom, nome_arquivo)
+                zonas = self.get_zonas()  # Obter as zonas processadas
+                if zonas:
+                    from openair_writer import gerar_openair_a_partir_de_zonas
+                    gerar_openair_a_partir_de_zonas(zonas, caminho_completo)
+                    Clock.schedule_once(lambda dt: self.atualizar_log(f"\n[OK] Arquivo salvo em: {caminho_completo}\n"), 0)
+                else:
+                    Clock.schedule_once(lambda dt: self.atualizar_log("\n[ERRO] Nenhuma zona extraída.\n"), 0)
+            else:
+                Clock.schedule_once(lambda dt: self.atualizar_log("\n[ERRO] Destino não selecionado.\n"), 0)
 
-            self.root.ids.status_label.text = "[3/3] Concluído!"
+            Clock.schedule_once(lambda dt: self.atualizar_status("[3/3] Concluído!"), 0)
 
         except Exception as e:
             self.log_erro(e)
-            self.root.ids.status_label.text = "Erro ao executar."
+            Clock.schedule_once(lambda dt: self.atualizar_status("Erro ao executar."), 0)
 
     def escolher_destino(self):
         if platform == "android":
@@ -122,6 +130,16 @@ class OpenAirApp(MDApp):
             log.write("Erro:\n")
             log.write(str(e) + "\n\n")
             log.write(traceback.format_exc())
+
+    def atualizar_status(self, texto):
+        self.root.ids.status_label.text = texto
+
+    def atualizar_log(self, texto):
+        self.root.ids.log_area.text = texto
+
+    def get_zonas(self):
+        from aixm_parser import processar_xmls
+        return processar_xmls()
 
 if __name__ == '__main__':
     try:
