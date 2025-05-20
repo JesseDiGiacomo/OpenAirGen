@@ -36,8 +36,8 @@ jobs:
         export PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$PATH
         yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: Install required SDKs and tools
-      run: |
+     - name: Install required SDKs and tools
+       run: |
         mkdir -p $HOME/android-sdk/cmdline-tools
         cd $HOME/android-sdk/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
@@ -46,14 +46,13 @@ jobs:
         export PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$PATH
         yes | sdkmanager --licenses
         yes | sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-31" "platforms;android-34"
-    
-        # Ensure build-tools folder is correctly set
-        mkdir -p $HOME/android-sdk/build-tools/34.0.0
-        ln -sf $HOME/android-sdk/cmdline-tools/latest $HOME/android-sdk/build-tools/34.0.0
-    
+
+        # Ensure PATH includes the correct build-tools and platform-tools
+        echo "export PATH=$HOME/android-sdk/build-tools/34.0.0:$HOME/android-sdk/platform-tools:$PATH" >> $GITHUB_ENV
+
         # Verify aidl is installed
-        if ! command -v aidl &> /dev/null; then
-          echo "Error: aidl not found after installation. Check build-tools installation." && exit 1
+        if ! [ -f "$HOME/android-sdk/build-tools/34.0.0/aidl" ]; then
+          echo "Error: aidl not found. Please check build-tools installation." && exit 1
         fi
 
     - name: Configurar variáveis do SDK
