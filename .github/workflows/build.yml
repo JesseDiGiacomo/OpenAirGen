@@ -39,7 +39,10 @@ jobs:
     - name: Instalar SDKs necessários
       run: |
         export PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$PATH
-        yes | sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-31"
+        yes | sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-31" "platforms;android-34"
+        # Ensure build-tools are installed in the expected location
+        mkdir -p $HOME/android-sdk/build-tools
+        ln -s $HOME/android-sdk/cmdline-tools/latest $HOME/android-sdk/build-tools/latest
 
     - name: Configurar variáveis do SDK
       run: |
